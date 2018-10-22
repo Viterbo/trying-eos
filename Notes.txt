@@ -1,3 +1,32 @@
+-- VPE Market --
+- buy_orders: token_order
+- sell_order: token_order
+- 
+  buy(owner, price, amount)
+  sell(owner, price, amount)
+  cancel(owner, price)
+------------
+-- <<token_order>> --
+  owner: name
+  created: date
+  price: asset
+  amount: asset
+  remaining: asset
+  product_contract: name
+  currency_contract: name
+
+
+
+
+Receiving EOS as payment
+https://medium.com/@cc32d9/receiving-and-sending-payments-in-eos-contract-using-irespo-as-example-25696e25b26
+https://eosio.stackexchange.com/questions/421/how-to-do-something-when-your-contract-is-an-action-notification-recipient-like
+https://eosio.stackexchange.com/questions/1384/get-token-balance-from-another-contract
+https://github.com/irespo/irespo/blob/master/irespo/irespoicoico/irespoicoico.cpp
+
+
+
+
 https://eosio.stackexchange.com/questions/2895/how-to-implement-a-48-char-long-symbol-token-with-balances-like-10-0000-custom
 
 
@@ -50,7 +79,8 @@ $ cleos wallet create --to-console
 Creating wallet: default
 Save password to use in the future to unlock this wallet.
 Without password imported keys will not be retrievable.
-"PW5JihqLALSLdXmhM3NkiVVB7aFN5YTmHxuVWjqmGiZ3vmFhKVsZ3"
+"PW5KBrN7vKENemM5B4oBs3Wf5j94AXNFZvbAvqCphfsPysUqLawj3" im
+"PW5JihqLALSLdXmhM3NkiVVB7aFN5YTmHxuVWjqmGiZ3vmFhKVsZ3" casa
 
 cleos wallet create -n gqydoobuhege --to-console
 Creating wallet: gqydoobuhege
@@ -77,12 +107,14 @@ Wallets:
   "default *"
 ]
 
-cleos wallet create_key
-Created new private key with a public key of: "EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj"
-cleos create account eosio bob EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj 
-cleos create account eosio alice EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj
-cleos create account eosio eosio.token EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj
+// EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj
+
+cleos create account eosio bob EOS6seqkCdAF5GxS5YQBXLVGim3new1W6Xy7prmvHgrbN8bg8hKFq -p eosio@active
+cleos create account eosio alice EOS6seqkCdAF5GxS5YQBXLVGim3new1W6Xy7prmvHgrbN8bg8hKFq -p eosio@active
+cleos create account eosio eosio.token EOS6seqkCdAF5GxS5YQBXLVGim3new1W6Xy7prmvHgrbN8bg8hKFq -p eosio@active
+cleos create account eosio hello EOS6seqkCdAF5GxS5YQBXLVGim3new1W6Xy7prmvHgrbN8bg8hKFq -p eosio@active
 eosio-cpp -I include -o eosio.token.wasm src/eosio.token.cpp --abigen
+cleos set contract hello /var/www/trying-eos/contracts/hello --abi hello.abi -p hello@active
 cleos set contract eosio.token /var/www/trying-eos/contracts/eosio.contracts/eosio.token --abi eosio.token.abi -p eosio.token@active
 cleos push action eosio.token create '[ "eosio", "1000000000.0000 SYS"]' -p eosio.token@active
 cleos push action eosio.token issue '[ "alice", "100.0000 SYS", "memo" ]' -p eosio@active
@@ -92,22 +124,16 @@ cleos get table eosio.token alice accounts
 cleos get table eosio.token SYS stat
 
 
-$ cleos create key
-Private key: 5JW1ime8G9CjremiEAGzn7JCCC9u63YmYVKQ4Dtspi6NeUWqNDy
-Public key: EOS7K2Q7CqccFUCXKTVas5mXLcHvkAG5Vf8QQafcJcPrgkAgqLtw9
 
-$ cleos wallet import 5JW1ime8G9CjremiEAGzn7JCCC9u63YmYVKQ4Dtspi6NeUWqNDy
-imported private key for: EOS7K2Q7CqccFUCXKTVas5mXLcHvkAG5Vf8QQafcJcPrgkAgqLtw9
+$ cleos create key --to-console
+Private key: 5Hucyduz8r9ZT2sJR88Jss1pEsfZjbUx1EUdVC7PN3CwAbCiHQN
+Public key: EOS6seqkCdAF5GxS5YQBXLVGim3new1W6Xy7prmvHgrbN8bg8hKFq
 
+$ cleos wallet import
+private key: 5Hucyduz8r9ZT2sJR88Jss1pEsfZjbUx1EUdVC7PN3CwAbCiHQN
+$ cleos wallet import
+private key: 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
 
-$ cleos wallet create -n periwinkle
-Creating wallet: periwinkle
-Save password to use in the future to unlock this wallet.
-Without password imported keys will not be retrievable.
-"PW5KQviRzJ7ELpj4xads2vZeQ9EKZoVDgmYdajqa9JWkxFf48sNje"
-
-$ cleos wallet lock -n periwinkle
-Locked: periwinkle
 
 
 
@@ -121,45 +147,12 @@ cleos wallet import 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
 
 
 
--- hello.code
-Private key: 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
-Public key: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
--- user
-Private key: 5JZ7nbLKRF7iiVdpzpqKiKWfJoZDgmHCnKRJBsmWqHk5WjkRZW9
-Public key: EOS86QiPRRV95e8viaH81iWYAUQ2Ps559L1Y9FCVbHsLuMdVXqWp7
--- 
-
-
 -- URLS --
 http://localhost:7777/v1/chain/get_info
 
 
 -- .bashrc
 alias cleos='sudo docker exec -it eosio /opt/eosio/bin/cleos --url http://127.0.0.1:7777 --wallet-url http://127.0.0.1:5555'
-
-
--- Creamos un contrato ---
-
-$ cleos create key
-Private key: 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
-Public key: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
-
-$ cleos wallet import 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
-imported private key for: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
-
-$ cleos create account eosio hello.code EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9 EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
-$ cleos get account -j hello.code | jq
-
-$cleos set contract hello.code . hello.wast hello.abi -p hello.code
-Reading WAST/WASM from hello.wast...
-Assembling WASM...
-Publishing contract...
-executed transaction: 051384648afde8cf60eb64bb6c53241207a47e3825b583417dacd73b9089cea4  1800 bytes  21243 us
-#         eosio <= eosio::setcode               {"account":"hello.code","vmtype":0,"vmversion":0,"code":"0061736d01000000013b0c60027f7e006000017e600...
-#         eosio <= eosio::setabi                {"account":"hello.code","abi":"0e656f73696f3a3a6162692f312e30000102686900010475736572046e616d6501000...
-
-
-
 
 
 
