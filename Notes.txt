@@ -1,0 +1,205 @@
+https://eosio.stackexchange.com/questions/2895/how-to-implement-a-48-char-long-symbol-token-with-balances-like-10-0000-custom
+
+
+
+
+
+--- Instalacion con docker ----
+para evitar tener que usar sudo con docker hacer:
+$ sudo chown viter:docker /var/run/docker.sock
+En el tutorial oficial dice que hay que instalar la versión 1.2.1 pero después da problemas para compilar el eosio.token
+$ #git clone --recursive https://github.com/eosio/eosio.cdt --branch v1.2.1 --single-branch
+Así que lo que hice en realidad fue:
+$ git clone --recursive https://github.com/eosio/eosio.cdt
+$ cd eosio.cdt
+back to release v1.3.1
+$ git reset --hard 1d0398fa61e9819705ee5a762d375e956c02016b
+back to release v1.2.1
+$ git reset --hard 112df8d18b0e7b69833b8f715eb288aec914b11b
+
+
+$ git clone https://github.com/EOSIO/eosio.contracts
+$ cd eosio.contracts
+$ git reset --hard afe890b9243432bef7308624eaee9571c4726649
+
+
+
+
+$ cleos set contract hello /var/www/trying-eos/contracts/hello/ --abi hello.abi -p hello@active
+Reading WASM from /var/www/trying-eos/contracts/hello/hello.wasm...
+Publishing contract...
+executed transaction: 115f3e23715e075d3ddc9215c87de26c4677eb7fff85336dca3f5cfc3ef6b27b  1448 bytes  581 us
+#         eosio <= eosio::setcode               {"account":"hello","vmtype":0,"vmversion":0,"code":"0061736d0100000001390b60027f7e006000017f60027f7f...
+#         eosio <= eosio::setabi                {"account":"hello","abi":"0e656f73696f3a3a6162692f312e30000102686900010475736572046e616d650100000000...
+warning: transaction executed locally, but may not be confirmed by the network yet    ] 
+
+
+$ cleos push action hello hi '["bob"]' -p bob@active
+Error 3015004: The type defined in the ABI is invalid
+
+
+
+
+-- comandos
+$ docker start eosio
+$ docker stop eosio
+
+
+
+$ cleos wallet create --to-console
+Creating wallet: default
+Save password to use in the future to unlock this wallet.
+Without password imported keys will not be retrievable.
+"PW5JihqLALSLdXmhM3NkiVVB7aFN5YTmHxuVWjqmGiZ3vmFhKVsZ3"
+
+cleos wallet create -n gqydoobuhege --to-console
+Creating wallet: gqydoobuhege
+Save password to use in the future to unlock this wallet.
+Without password imported keys will not be retrievable.
+"PW5JLigqFQf8sFJeJYhYDY9DD2Vk9YYzQnSHdH67qbDNn1LvCkmBc"
+
+
+$ cleos wallet list
+Wallets:
+[]
+
+$ cleos wallet open -n gqydoobuhege
+$ cleos wallet list
+Wallets:
+[
+  "default"
+]
+
+$ cleos wallet unlock -n gqydoobuhege
+$ cleos wallet list
+Wallets:
+[
+  "default *"
+]
+
+cleos wallet create_key
+Created new private key with a public key of: "EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj"
+cleos create account eosio bob EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj 
+cleos create account eosio alice EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj
+cleos create account eosio eosio.token EOS5Y4mKVgbinNAX3bZYNDQN2F85oQj53npmYC9Wr2fadrq58ChMj
+eosio-cpp -I include -o eosio.token.wasm src/eosio.token.cpp --abigen
+cleos set contract eosio.token /var/www/trying-eos/contracts/eosio.contracts/eosio.token --abi eosio.token.abi -p eosio.token@active
+cleos push action eosio.token create '[ "eosio", "1000000000.0000 SYS"]' -p eosio.token@active
+cleos push action eosio.token issue '[ "alice", "100.0000 SYS", "memo" ]' -p eosio@active
+cleos push action eosio.token issue '[ "bob", "100.0000 SYS", "memo" ]' -p eosio@active
+cleos push action eosio.token transfer '[ "alice", "bob", "25.0000 SYS", "m" ]' -p alice@active
+cleos get table eosio.token alice accounts
+cleos get table eosio.token SYS stat
+
+
+$ cleos create key
+Private key: 5JW1ime8G9CjremiEAGzn7JCCC9u63YmYVKQ4Dtspi6NeUWqNDy
+Public key: EOS7K2Q7CqccFUCXKTVas5mXLcHvkAG5Vf8QQafcJcPrgkAgqLtw9
+
+$ cleos wallet import 5JW1ime8G9CjremiEAGzn7JCCC9u63YmYVKQ4Dtspi6NeUWqNDy
+imported private key for: EOS7K2Q7CqccFUCXKTVas5mXLcHvkAG5Vf8QQafcJcPrgkAgqLtw9
+
+
+$ cleos wallet create -n periwinkle
+Creating wallet: periwinkle
+Save password to use in the future to unlock this wallet.
+Without password imported keys will not be retrievable.
+"PW5KQviRzJ7ELpj4xads2vZeQ9EKZoVDgmYdajqa9JWkxFf48sNje"
+
+$ cleos wallet lock -n periwinkle
+Locked: periwinkle
+
+
+
+-- https://github.com/EOSIO/eos/issues/4154#issuecomment-397820824
+-- Resulta que es necesario tener la clave privada del 'creator' importada en la default wallet.
+-- La idea es que cuando creas una cuenta, tenés que firmar esa transacción con la clave del creator (en este caso 'eosio')
+-- Así que hay que importar la clave privada de eosio en testnet qu ees la siguiente:
+cleos wallet import 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+
+
+
+
+
+-- hello.code
+Private key: 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
+Public key: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
+-- user
+Private key: 5JZ7nbLKRF7iiVdpzpqKiKWfJoZDgmHCnKRJBsmWqHk5WjkRZW9
+Public key: EOS86QiPRRV95e8viaH81iWYAUQ2Ps559L1Y9FCVbHsLuMdVXqWp7
+-- 
+
+
+-- URLS --
+http://localhost:7777/v1/chain/get_info
+
+
+-- .bashrc
+alias cleos='sudo docker exec -it eosio /opt/eosio/bin/cleos --url http://127.0.0.1:7777 --wallet-url http://127.0.0.1:5555'
+
+
+-- Creamos un contrato ---
+
+$ cleos create key
+Private key: 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
+Public key: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
+
+$ cleos wallet import 5KZ6Swfp4omEv9k4Asw5i3umSVyZWiBABqrR6wAaEHZsfHU1pN1
+imported private key for: EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
+
+$ cleos create account eosio hello.code EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9 EOS6CMDcAVshE9EZHg555tBXnYfXwBoGuQorfhR7GBLnBuL3eCzH9
+$ cleos get account -j hello.code | jq
+
+$cleos set contract hello.code . hello.wast hello.abi -p hello.code
+Reading WAST/WASM from hello.wast...
+Assembling WASM...
+Publishing contract...
+executed transaction: 051384648afde8cf60eb64bb6c53241207a47e3825b583417dacd73b9089cea4  1800 bytes  21243 us
+#         eosio <= eosio::setcode               {"account":"hello.code","vmtype":0,"vmversion":0,"code":"0061736d01000000013b0c60027f7e006000017e600...
+#         eosio <= eosio::setabi                {"account":"hello.code","abi":"0e656f73696f3a3a6162692f312e30000102686900010475736572046e616d6501000...
+
+
+
+
+
+
+cleos push action hello.code hello '["user"]' -p user
+
+cleos create account eosio user EOS86QiPRRV95e8viaH81iWYAUQ2Ps559L1Y9FCVbHsLuMdVXqWp7 EOS86QiPRRV95e8viaH81iWYAUQ2Ps559L1Y9FCVbHsLuMdVXqWp7
+
+gqydoobuhege
+4743
+4983
+5223
+5463
+5703
+
+nodeos -e -p eosio --plugin eosio::wallet_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::account_history_api_plugin
+
+keosd --http-server-address=0.0.0.0:5555 & 
+nodeos -e -p eosio --plugin eosio::producer_plugin --plugin eosio::history_plugin --plugin eosio::chain_api_plugin --plugin eosio::history_api_plugin --plugin eosio::http_plugin --access-control-allow-origin=* --contracts-console --http-validate-host=false --filter-on='*'
+
+
+----- Errores encontrados en el curso -----
+- C++
+  - Optional: Introduction to Computer Science - MIT Lecture
+    This is a wonderful lecture talking about computer science and "cimputation".  <<<---
+
+
+
+
+-- CODIGO --
+cuando hacé suna tabla como esta:
+typedef eosio::multi_index<N(TableName), currency_stats> BBBB;
+internamente en el código la usás como tipo BBBB pero con cleos después tenés que referirte a ella como TableName:
+  cleos get table smart_contract_account alice TableName
+
+-- C&T TODO --
+hay que crear un nuevo struct AAA a partir de asset. donde en vez de un symbol tendrías que tener un BBBB que sería casi iguala symbol, sólo que en vez de un symbol_code tendría un BBB_code que se comportaría como un name. De esta manera podrías expresar el balance de una account o el total supply de una card como si fuera un token (eosio.token) con la diferencia que permitiría nombres largos en vez de cortos y solo mayúsculas
+
+
+-- crear los siguientes accounts en eos --
+cryptopesouy
+cardsntokens
+cryptovapaee
+boardgamebox

@@ -1,0 +1,72 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT Sun Oct 21 18:36:34 2018",
+    "version": "eosio::abi/1.0",
+    "structs": [
+        {
+            "name": "delhash",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "ipfsdata",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "text_hash",
+                    "type": "string"
+                },
+                {
+                    "name": "image_hash",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "savehash",
+            "base": "",
+            "fields": [
+                {
+                    "name": "text_hash",
+                    "type": "string"
+                },
+                {
+                    "name": "image_hash",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "types": [],
+    "actions": [
+        {
+            "name": "delhash",
+            "type": "delhash",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "savehash",
+            "type": "savehash",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "ipfsdata",
+            "type": "ipfsdata",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "abi_extensions": []
+}
